@@ -13,26 +13,6 @@ install_mise_via_curl() {
   curl -fsSL https://mise.run | MISE_INSTALL_PATH="$install_path" sh
 }
 
-ensure_curl_linux() {
-  if need curl; then
-    return 0
-  fi
-
-  if need apt-get; then
-    sudo apt-get update
-    sudo apt-get install -y curl
-  elif need dnf; then
-    sudo dnf install -y curl
-  elif need pacman; then
-    sudo pacman -Syu --noconfirm curl
-  elif need apk; then
-    sudo apk add --no-cache curl
-  else
-    echo "curl not found and no supported package manager found." >&2
-    exit 1
-  fi
-}
-
 main() {
   if need mise || [ -x "$HOME/.local/bin/mise" ]; then
     exit 0
@@ -51,7 +31,11 @@ main() {
       fi
       ;;
     Linux)
-      ensure_curl_linux
+      if ! need curl; then
+        echo "curl not found. Run the base dependencies script first." >&2
+        exit 1
+      fi
+
       install_mise_via_curl
       ;;
     *)

@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+need() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+sudo_cmd() {
+  if [ "$(id -u)" -eq 0 ]; then
+    "$@"
+  elif need sudo; then
+    sudo "$@"
+  else
+    echo "sudo is required but not found." >&2
+    exit 1
+  fi
+}
+
+install_linux_dependencies() {
+  if need apt-get; then
+    local dependencies=(
+      ca-certificates
+      curl
+      git
+      gnupg
+      lsb-release
+      unzip
+      wget
+      xz-utils
+    )
+
+    sudo_cmd apt-get update
+    sudo_cmd apt-get install -y "${dependencies[@]}"
+
+  elif need dnf; then
+    local dependencies=(
+      ca-certificates
+      curl
+      git
+      gnupg2
+      redhat-lsb-core
+      unzip
+      wget
+      xz
+    )
+
+    sudo_cmd dnf install -y "${dependencies[@]}"
+
+  elif need pacman; then
+    local dependencies=(
+      ca-certificates
+      curl
+      git
+      gnupg
+      lsb-release
+      unzip
+      wget
+      xz
+    )
+
+    sudo_cmd pacman -Syu --noconfirm "${dependencies[@]}"
+
+  elif need apk; then
+    local dependencies=(
+      ca-certificates
+      curl
+      git
+      gnupg
+      lsb-release
+      unzip
+      wget
+      xz
+    )
+
+    sudo_cmd apk add --no-cache "${dependencies[@]}"
+
+  else
+    echo "No supported package manager found." >&2
+    exit 1
+  fi
+}
+
+install_darwin_dependencies() {
+  local dependencies=(
+    curl
+    git
+    gnupg
+    unzip
+    wget
+    xz
+  )
+
+  if ! need brew; then
+    echo "Homebrew is required to install: ${dependencies[*]}" >&2
+    exit 1
+  fi
+
+  brew install "${dependencies[@]}"
+}
+
+main() {
+  case "$(uname -s)" in
+    Darwin)
+      install_darwin_dependencies
+      ;;
+    Linux)
+      install_linux_dependencies
+      ;;
+    *)
+      echo "Unsupported OS: $(uname -s)" >&2
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

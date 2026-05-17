@@ -100,6 +100,12 @@ ensure_not_in_zellij() {
 	fi
 }
 
+setup_truecolor() {
+	export COLORTERM="${COLORTERM:-truecolor}"
+	export TRUECOLOR="${TRUECOLOR:-1}"
+	info "truecolor enabled: COLORTERM=$COLORTERM TRUECOLOR=$TRUECOLOR"
+}
+
 main() {
 	local session
 
@@ -107,6 +113,7 @@ main() {
 	load_config
 	setup_ssh
 	ensure_not_in_zellij
+	setup_truecolor
 
 	session="$(
 		zjsh list -i \
