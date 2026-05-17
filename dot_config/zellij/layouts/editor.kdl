@@ -29,7 +29,7 @@ layout {
 
     tab name="editor" {
         pane stacked=true {
-            pane name="neovim" command="neovim" focus=true
+            pane name="neovim" command="nvim" focus=true
             pane name="terminal" command="zsh"
         }
     }
